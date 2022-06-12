@@ -31,6 +31,7 @@ tqdm = "^4.64.0"
 uvicorn = {extras = ["standard"], version = "^0.17.6"}
 wandb = "^0.12.18"
 rich = "^12.4.4"
+gdown = "^4.4.0"
 
 [tool.poetry.dev-dependencies]
 
