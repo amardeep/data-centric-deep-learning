@@ -70,6 +70,7 @@ class DigitClassifierFlow(FlowSpec):
     )
 
     trainer = Trainer(
+      # accelerator = "auto",
       max_epochs = config.system.optimizer.max_epochs,
       callbacks = [checkpoint_callback])
 
@@ -92,7 +93,7 @@ class DigitClassifierFlow(FlowSpec):
 
     scores = []        # populate with scores from each hparams
     best_index = None  # replace with best index
-    
+
     # ================================
     # FILL ME OUT
     # 
@@ -109,6 +110,10 @@ class DigitClassifierFlow(FlowSpec):
     # aggregate scores using `inputs`
     # best_index = ...
     #
+
+    scores = [i.callback.best_model_score for i in inputs]        # populate with scores from each hparams
+    best_index = np.asarray(scores).argmax()  # replace with best index
+
     # Type:
     # --
     # scores: List[float] 
