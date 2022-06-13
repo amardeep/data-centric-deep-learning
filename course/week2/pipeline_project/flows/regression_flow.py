@@ -59,6 +59,7 @@ class DigitClassifierFlow(FlowSpec):
     dm = MNISTDataModule(config)
     system = DigitClassifierSystem(config)
 
+    wandb.init()
     checkpoint_callback = ModelCheckpoint(
       dirpath = config.system.save_dir,
       monitor = 'dev_loss',
@@ -90,6 +91,7 @@ class DigitClassifierFlow(FlowSpec):
   def train_model(self):
     """Calls `fit` on the trainer."""
 
+    wandb.init()
     self.trainer.fit(self.system, self.dm)
 
     wandb.finish()  # close wandb run
