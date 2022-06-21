@@ -38,7 +38,7 @@ async def predict(request: Request, body: InferenceInput):
   # add hacks to download images as a bot
   opener = urllib.request.build_opener()
   opener.addheaders = [('User-Agent',
-    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36')]
   urllib.request.install_opener(opener)
   # download locally: we assume that the image is already preprocessed.
   urllib.request.urlretrieve(body.image_url, local_path)

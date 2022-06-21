@@ -45,6 +45,8 @@ class PredictionTask(Task):
     # Pseudocode:
     # --
     # system = ...
+    system = DigitClassifierSystem.load_from_checkpoint(MODEL_PATH)
+
     # 
     # Types:
     # --
@@ -99,6 +101,8 @@ def predict_single(self, data):
     # --
     # logits = ... (use system)
     # 
+    logits = self.system.predict_step(im)
+    
     # Types:
     # --
     # logits: torch.Tensor (shape: 1x10)
@@ -119,6 +123,7 @@ def predict_single(self, data):
     # --
     # probs = ...do something to logits...
     # 
+    probs = F.softmax(logits)
     # Types:
     # --
     # probs: torch.Tensor (shape: 1x10)
@@ -135,7 +140,7 @@ def predict_single(self, data):
   # why we need Celery.
   # 
   # Uncomment me when you are told to in the notes!
-  # time.sleep(5)
+  time.sleep(5)
   # ================================
 
   return results
