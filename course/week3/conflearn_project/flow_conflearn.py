@@ -71,6 +71,7 @@ class TrainIdentifyReview(FlowSpec):
 
     trainer = Trainer(
       max_epochs = config.train.optimizer.max_epochs,
+      accelerator = "auto",
       callbacks = [checkpoint_callback])
 
     # when we save these objects to a `step`, they will be available
@@ -164,6 +165,29 @@ class TrainIdentifyReview(FlowSpec):
       # Call `predict` on `Trainer` and the test data loader.
       # Convert probabilities back to numpy (make sure 1D).
       # 
+
+      X_train = torch.tensor(X[train_index])
+      y_train = torch.tensor(y[train_index])
+      X_test =  torch.tensor(X[test_index])
+      y_test =  torch.tensor(y[test_index])
+
+      train_ds = TensorDataset(X_train, y_train)
+      test_ds = TensorDataset(X_test, y_test)
+      train_dl = DataLoader(train_ds, batch_size=self.config.train.optimizer.batch_size)
+      test_dl = DataLoader(test_ds, batch_size=self.config.train.optimizer.batch_size)
+
+      system = SentimentClassifierSystem(self.config)
+      trainer = Trainer(max_epochs = self.config.train.optimizer.max_epochs, accelerator = "auto")
+      # trainer = Trainer(max_epochs = 1)
+      trainer.fit(system, train_dl)
+
+      preds = trainer.predict(system, test_dl, ckpt_path="best")
+      # If batch_size=32, then preds would be a list of tensors of size([32, 1]) (except last batch)
+      # We need to convert this to a single list
+      assert preds[0].shape == torch.Size([32, 1])
+      probs_ = torch.cat(preds).squeeze().numpy()
+      assert probs_.shape == (len(y_test),)
+
       # Types:
       # --
       # probs_: np.array[float] (shape: |test set|)
@@ -208,6 +232,15 @@ class TrainIdentifyReview(FlowSpec):
     # 
     # Our solution is one function call.
     # 
+    ranked_label_issues = find_label_issues(
+      self.all_df.label,
+      prob,
+      # By default it returns a mask. Specify return_indices_ranked_by to instead
+      # get a list of indices with issues. Any value is fine - as it just changes
+      # the order of indices.
+      return_indices_ranked_by = "normalized_margin"
+    )
+
     # Types
     # --
     # ranked_label_issues: List[int]
@@ -307,12 +340,18 @@ class TrainIdentifyReview(FlowSpec):
     # dm.train_dataset.data = training slice of self.all_df
     # dm.dev_dataset.data = dev slice of self.all_df
     # dm.test_dataset.data = test slice of self.all_df
+    #
+    dm.train_dataset.data = self.all_df.iloc[:train_size]
+    dm.dev_dataset.data = self.all_df.iloc[train_size : (train_size + dev_size)]
+    dm.test_dataset.data = self.all_df.iloc[(train_size + dev_size) :]
+
     # # ====================================
 
     # start from scratch
     system = SentimentClassifierSystem(self.config)
     trainer = Trainer(
-      max_epochs = self.config.train.optimizer.max_epochs)
+      max_epochs = self.config.train.optimizer.max_epochs,
+      accelerator = "auto")
 
     trainer.fit(system, dm)
     trainer.test(system, dm, ckpt_path = 'best')
