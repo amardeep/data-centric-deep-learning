@@ -130,6 +130,9 @@ def predict(request: Request, body: InferenceInput):
     # --
     # logits = ... (use system)
     # 
+    logits = system.predict_step(im)
+    assert logits.shape == (1, 10)
+
     # Types:
     # --
     # logits: torch.Tensor (shape: 1x10)
@@ -151,6 +154,8 @@ def predict(request: Request, body: InferenceInput):
     # --
     # probs = ...do something to logits...
     # 
+    probs = F.softmax(logits)
+
     # Types:
     # --
     # probs: torch.Tensor (shape: 1x10)
