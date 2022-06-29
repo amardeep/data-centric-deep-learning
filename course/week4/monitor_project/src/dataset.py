@@ -43,6 +43,12 @@ class ProductReviewEmbeddings(Dataset):
     #   split review into tokens
     #   update vocab with each token
     # 
+
+    for text in self.data.review:
+      tokens = text.lower().split()
+      for token in tokens:
+        vocab[token] += 1
+
     # Type:
     # --
     # vocab: dict[str, int]
@@ -106,6 +112,12 @@ class ProductReviewStream(Dataset):
     #   split review into tokens
     #   update vocab with each token
     # 
+    
+    for text in self.data.review:
+      tokens = text.lower().split()
+      for token in tokens:
+        vocab[token] += 1
+    
     # Type:
     # --
     # vocab: dict[str, int]

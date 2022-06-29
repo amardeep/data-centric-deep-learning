@@ -18,6 +18,8 @@ def get_ks_score(tr_probs, te_probs):
   # convert te_prob to numpy
   # apply ks_2samp
   # 
+  _, score = ks_2samp(tr_probs.numpy(), te_probs.numpy())
+
   # Type:
   # --
   # tr_probs: torch.Tensor
@@ -51,6 +53,18 @@ def get_hist_score(tr_probs, te_probs, bins=10):
   #   intersect = min(tr_area, te_area)
   #   score = score + intersect
   # 
+
+  tr_heights, bin_edges = np.histogram(tr_probs.numpy(), bins=10, density=True)
+  te_heights, _ = np.histogram(te_probs.numpy(), bins=bin_edges, density=True)
+
+  score = 0
+  for i in range(len(bin_edges) - 1):
+    bin_diff = bin_edges[i+1] - bin_edges[i]
+    tr_area = bin_diff * tr_heights[i]
+    te_area = bin_diff * te_heights[i]
+    intersect = min(tr_area, te_area)
+    score = score + intersect
+
   # Type:
   # --
   # tr_probs: torch.Tensor
@@ -88,6 +102,10 @@ def get_vocab_outlier(tr_vocab, te_vocab):
   # num_total = ...
   # score = 1 - (num_seen / num_total)
   # 
+  num_seen = len(te_vocab.keys() & tr_vocab.keys())
+  num_total = len(te_vocab.keys())
+  score = 1.0 - num_seen / num_total
+
   # Type:
   # --
   # tr_vocab: dict[str, int]
@@ -122,6 +140,12 @@ class MonitoringSystem:
     # tr_probs_cal = fit calibration model
     # te_probs_cal = evaluate using fitted model
     # 
+    iso_reg = IsotonicRegression(out_of_bounds='clip')
+    tr_probs_cal = iso_reg.fit_transform(tr_probs.numpy(), tr_labels.numpy())
+    te_probs_cal = iso_reg.transform(te_probs.numpy())
+    tr_probs_cal = torch.tensor(tr_probs_cal)
+    te_probs_cal = torch.tensor(te_probs_cal)
+
     # Type:
     # --
     # `tr_probs_cal`: torch.Tensor. Note that sklearn
