@@ -81,6 +81,13 @@ class JustTrainTwice(FlowSpec):
     #   each element matches. 
     # Store the result into `weights`.
     # 
+
+    preds = self.trainer.predict(self.system, dl)
+    probs = torch.concat(preds).squeeze()
+    y_hat = torch.round(probs)
+    y = ds.get_labels()
+    weights = (y != y_hat).float()
+
     # Type:
     # --
     # weights: torch.FloatTensor (length: |ds|)
@@ -143,6 +150,9 @@ class JustTrainTwice(FlowSpec):
     # --
     # acc_diff = |english accuracy - spanish accuracy|
     # 
+
+    acc_diff = abs(en_results["acc"] - es_results["acc"])
+
     # Type:
     # --
     # acc_diff: float (> 0 and < 1)
@@ -173,6 +183,10 @@ class JustTrainTwice(FlowSpec):
     # --
     # Loop through inputs. Each input has a `acc_diff` param.
     # 
+
+    acc_diffs = [input.acc_diff for input in inputs]
+    index = np.argmin(acc_diffs)
+    
     # Type:
     # --
     # index: integer
