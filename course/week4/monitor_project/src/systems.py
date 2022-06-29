@@ -193,6 +193,11 @@ class RobustSentimentSystem(SentimentClassifierSystem):
     # loss0 = mean of terms in `loss` belonging to group 0
     # loss1 = mean of terms in `loss` belonging to group 1
     # loss = max(loss0, loss1)
+
+    loss0 = loss[groups == 0].mean()
+    loss1 = loss[groups == 1].mean()
+    loss = max(loss0, loss1)
+
     # 
     # Types:
     # --
